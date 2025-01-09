@@ -17,6 +17,7 @@ interface TripsClientProps {
 const TripsClient: React.FC<TripsClientProps> = ({
     reservations,
     currentUser
+    
 }) => {
     const router = useRouter();
     const [deletingId, setDeletingId] = useState('');
