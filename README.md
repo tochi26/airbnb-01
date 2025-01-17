@@ -11,6 +11,9 @@ Welcome to the **Airbnb Clone** project! This is a fully functional, feature-ric
 
 ## Screenshots
 
+### Home Page
+![Home Page](Images/homepage.png)
+
 ### Properties Page
 ![Properties Page](Images/properties.png)
 
