@@ -5,14 +5,31 @@ import Image from "next/image";
 import { useCallback } from "react";
 import { TbPhotoPlus } from "react-icons/tb";
 
-declare global { 
-    const cloudinary: any;
-}
+declare global {
+    // Ensure you use `var` here so that the declaration merges into the global scope.
+    // eslint-disable-next-line no-var
+    var cloudinary: CloudinaryGlobal;
+  }
 
 interface ImageUploadProps {
     onChange: (value: string) => void;
     value: string;
 }
+//    for the global cloudinary object and the widget result.
+interface CloudinaryWidgetResult {
+    event: string;
+    info: {
+      secure_url: string;
+      // add other fields if you need them
+    };
+  }
+  // it with the official type from `cloudinary-core`/`next-cloudinary` if available.
+interface CloudinaryGlobal {
+    createUploadWidget: (
+      options: unknown,
+      callback: (error: unknown, result: CloudinaryWidgetResult) => void
+    ) => void;
+  }
 const ImageUpload: React.FC<ImageUploadProps> = ({
     onChange,
     value
@@ -33,7 +50,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         {({ open })=> {
             return(
                 <div
-                onClick={() => open()}
+                onClick={() => open?.()}
                 className="
                 relative
                 cursor-pointer
