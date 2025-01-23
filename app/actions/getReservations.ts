@@ -1,10 +1,20 @@
 import prisma from "@/app/libs/prismadb";
 
+
 interface IParams {
     listingId: string;
     userId: string;
     authorId: string;
 }
+interface QueryType {
+    listingId?: string;
+    userId?: string;
+    Listing?: {
+        userId?: string;
+    };
+}
+
+
 
 export default async function getReservations(
     params: IParams
@@ -12,7 +22,7 @@ export default async function getReservations(
     try {
         const { listingId, userId, authorId } = params;
 
-        const query: any = {};
+        const query: QueryType = {};
 
         if (listingId) {
             query.listingId = listingId;
@@ -37,7 +47,7 @@ export default async function getReservations(
         });
 
         const safeReservations = reservations.map(
-            (reservation) => ({
+            (reservation: { createdAt: { toISOString: () => any; }; startDate: { toISOString: () => any; }; endDate: { toISOString: () => any; }; Listing: { createdAt: { toISOString: () => any; }; }; }) => ({
                 ...reservation,
                 createdAt: reservation.createdAt.toISOString(),
                 startDate: reservation.startDate.toISOString(),
@@ -49,7 +59,11 @@ export default async function getReservations(
             })
         );
         return safeReservations;
-    } catch (error: any) {
-        throw new Error(error)
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            throw new Error(error.message);
+        } else {
+            throw new Error("An unknown error occurred");
+        }
     }
 } 
