@@ -1,96 +1,104 @@
-'use client';
+"use client";
 
-import { CldUploadWidget} from "next-cloudinary";
+import {
+  CldUploadWidget,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 import Image from "next/image";
 import { useCallback } from "react";
 import { TbPhotoPlus } from "react-icons/tb";
 
-declare global {
-    // Ensure you use `var` here so that the declaration merges into the global scope.
-    // eslint-disable-next-line no-var
-    var cloudinary: CloudinaryGlobal;
-  }
+//
+// 1) Define a placeholder type for the widget parameter.
+//    You can refine it with actual widget methods/properties if needed.
+//
+type CldUploadEventCallbackWidget = {
+  open?: () => void;
+  close?: () => void;
+  destroy?: () => void;
+  // ...any other properties you need
+};
 
+//
+// 2) Export your custom callback type using the placeholder above.
+//
+export type CldUploadEventCallback = (
+  results: CloudinaryUploadWidgetResults,
+  widget: CldUploadEventCallbackWidget
+) => void;
+
+//
+// 3) Regular component props
+//
 interface ImageUploadProps {
-    onChange: (value: string) => void;
-    value: string;
+  onChange: (value: string) => void;
+  value: string;
 }
-//    for the global cloudinary object and the widget result.
-interface CloudinaryWidgetResult {
-    event: string;
-    info: {
-      secure_url: string;
-      // add other fields if you need them
-    };
-  }
-  // it with the official type from `cloudinary-core`/`next-cloudinary` if available.
-interface CloudinaryGlobal {
-    createUploadWidget: (
-      options: unknown,
-      callback: (error: unknown, result: CloudinaryWidgetResult) => void
-    ) => void;
-  }
-const ImageUpload: React.FC<ImageUploadProps> = ({
-    onChange,
-    value
-}) => {
-    const handleUpload = useCallback((result: any) => {
-        onChange(result.info.secure_url);
 
-    },[onChange]);
-    return (
-      <CldUploadWidget 
-      onSuccess= {handleUpload} 
-      uploadPreset="preset-01"
-      options={{
-        maxFiles: 1
-      }}
+//
+// 4) The ImageUpload component
+//
+const ImageUpload: React.FC<ImageUploadProps> = ({ onChange, value }) => {
+  //
+  // Because next-cloudinary doesn't export CldUploadEventCallback,
+  // we use our own custom type alias here:
+  //
+  const handleUploadSuccess: CldUploadEventCallback = useCallback(
+    (results) => {
+      if (results.event === "success") {
+        const info = results.info;
+        // `info` can be a string or an object; narrow the type before accessing secure_url
+        if (typeof info !== "string" && info?.secure_url) {
+          onChange(info.secure_url);
+        }
+      }
+    },
+    [onChange]
+  );
 
-      >
-        {({ open })=> {
-            return(
-                <div
-                onClick={() => open?.()}
-                className="
-                relative
-                cursor-pointer
-                hover:opacity-70
-                transition
-                border-dashed
-                border-2
-                p-20
-                border-neutral-300
-                flex
-                flex-col
-                justify-center
-                items-center
-                gap-4
-                text-neutral-600
-                "
-                >
-                    <TbPhotoPlus size={50}/>
-                    <div className="font-semibold text-lg">
-                        Click to upload
-                    </div>
-                    {value && (
-                        <div
-                        className="absolute inset-0 w-full"
-                        >
-                            <Image
-                            alt="Upload"
-                            fill
-                            style={{ objectFit: 'cover'}}
-                            src={value}
-                            />
+  return (
+    <CldUploadWidget
+      onSuccess={handleUploadSuccess}
+      uploadPreset="preset-01"  // Replace with your own preset
+      options={{ maxFiles: 1 }}
+    >
+      {({ open }) => (
+        <div
+          onClick={() => open?.()}
+          className="
+            relative
+            cursor-pointer
+            hover:opacity-70
+            transition
+            border-dashed
+            border-2
+            p-20
+            border-neutral-300
+            flex
+            flex-col
+            justify-center
+            items-center
+            gap-4
+            text-neutral-600
+          "
+        >
+          <TbPhotoPlus size={50} />
+          <div className="font-semibold text-lg">Click to upload</div>
 
-                        </div>
-                    )}
-
-                </div>
-            )
-        }}
-        </CldUploadWidget>
-    )
-}
+          {value && (
+            <div className="absolute inset-0 w-full">
+              <Image
+                alt="Upload"
+                fill
+                style={{ objectFit: "cover" }}
+                src={value}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </CldUploadWidget>
+  );
+};
 
 export default ImageUpload;
