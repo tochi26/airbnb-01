@@ -1,53 +1,51 @@
 import prisma from "@/app/libs/prismadb";
-
+import { Reservation, Listing } from "@prisma/client";
 
 interface IParams {
-    listingId: string;
-    userId: string;
-    authorId: string;
-}
-interface QueryType {
     listingId?: string;
     userId?: string;
-    Listing?: {
-        userId?: string;
-    };
+    authorId?: string;
 }
 
+type ReservationWithListing = Reservation & {
+    Listing: Listing;
+};
 
-
-export default async function getReservations(
-    params: IParams
-) {
+export default async function getReservations(params: IParams) {
     try {
         const { listingId, userId, authorId } = params;
 
-        const query: QueryType = {};
+        // Build the query object
+        const query: {
+            listingId?: string;
+            userId?: string;
+            Listing?: { userId?: string };
+        } = {};
 
         if (listingId) {
             query.listingId = listingId;
         }
-
         if (userId) {
             query.userId = userId;
         }
-
         if (authorId) {
             query.Listing = { userId: authorId };
         }
 
+        // Fetch Reservations
         const reservations = await prisma.reservation.findMany({
             where: query,
             include: {
                 Listing: true,
             },
             orderBy: {
-                createdAt: 'desc'
-            }
+                createdAt: "desc",
+            },
         });
 
-        const safeReservations = reservations.map(
-            (reservation: { createdAt: { toISOString: () => any; }; startDate: { toISOString: () => any; }; endDate: { toISOString: () => any; }; Listing: { createdAt: { toISOString: () => any; }; }; }) => ({
+        // Transform date fields to strings
+        const safeReservations = reservations.map((reservation: ReservationWithListing) => {
+            return {
                 ...reservation,
                 createdAt: reservation.createdAt.toISOString(),
                 startDate: reservation.startDate.toISOString(),
@@ -55,9 +53,10 @@ export default async function getReservations(
                 listing: {
                     ...reservation.Listing,
                     createdAt: reservation.Listing.createdAt.toISOString(),
-                }
-            })
-        );
+                },
+            };
+        });
+
         return safeReservations;
     } catch (error: unknown) {
         if (error instanceof Error) {
@@ -66,4 +65,4 @@ export default async function getReservations(
             throw new Error("An unknown error occurred");
         }
     }
-} 
+}
