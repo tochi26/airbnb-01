@@ -1,3 +1,4 @@
+import { Listing } from "@prisma/client";
 import prisma from "@/app/libs/prismadb";
 import getCurrentUser from "./getCurrentUser";
 
@@ -9,7 +10,8 @@ export default async function getFavoriteListings() {
             return [];
         }
 
-        const favorites = await prisma.listing.findMany({
+        // Get the listings that are in the user's favorite IDs
+        const favorites: Listing[] = await prisma.listing.findMany({
             where: {
                 id: {
                     in: [...(currentUser.favoriteIds || [])]
@@ -17,9 +19,10 @@ export default async function getFavoriteListings() {
             }
         });
 
-        const safeFavorites = favorites.map((favorites) => ({
-            ...favorites,
-            createdAt: favorites.createdAt.toISOString(),
+        // Safely transform them for serialization
+        const safeFavorites = favorites.map((favorite) => ({
+            ...favorite,
+            createdAt: favorite.createdAt.toISOString(),
         }));
 
         return safeFavorites;
