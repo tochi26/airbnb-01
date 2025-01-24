@@ -24,7 +24,6 @@ enum STEPS {
     IMAGES = 3,
     DESCRIPTION = 4,
     PRICE = 5
-
 }
 
 const RentModal = () => {
@@ -54,7 +53,6 @@ const RentModal = () => {
             price:1,
             title: '',
             description: '',
-
         }
     });
 
@@ -69,13 +67,14 @@ const RentModal = () => {
         ssr: false
     }),[]);
 
-    const setCustomValue = (id: string, value: any) => {
+    // Updated setCustomValue with generic types
+    const setCustomValue = <T extends keyof FieldValues>(id: T, value: FieldValues[T]) => {
         setValue(id, value, {
             shouldValidate: true,
             shouldDirty: true,
             shouldTouch: true,
         });
-    }
+    };
 
     const onBack = () => {
         setStep((value) => value -1);
