@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
 declare global {
-    // For globalThis
+    // Use var, not const. (Block-scoped const can conflict with repeated declarations.)
     // eslint-disable-next-line no-var
     var prisma: PrismaClient | undefined;
 }
 
-// If this file is a module, you need at least one export statement
 export { };
