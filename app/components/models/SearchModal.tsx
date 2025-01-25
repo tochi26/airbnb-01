@@ -12,13 +12,19 @@ import Heading from "../Heading";
 import Calendar from "../inputs/Calendar";
 import Counter from "../inputs/Counter";
 
+// Import the Range type from react-date-range
+import { Range } from "react-date-range";
+
 enum STEPS {
   LOCATION = 0,
   DATE = 1,
   INFO = 2
 }
 
-// ---- FIX: Make this compatible with query-string ----
+/**
+ * Make this compatible with `query-string`.
+ * Each property must be one of the stringifiable types.
+ */
 interface SearchQuery extends Record<
   string,
   string | number | boolean | null | undefined
@@ -41,16 +47,18 @@ const SearchModal = () => {
   const [guestCount, setGuestCount] = useState(1);
   const [roomCount, setRoomCount] = useState(1);
   const [bathroomCount, setBathroomCount] = useState(1);
-  const [dateRange, setDateRange] = useState({
+
+  /**
+   * Use the `Range` type directly so it can allow
+   * optional `startDate` and `endDate`.
+   */
+  const [dateRange, setDateRange] = useState<Range>({
     startDate: new Date(),
     endDate: new Date(),
-    key: 'selection'
+    key: 'selection',
   });
 
-  const Map = useMemo(
-    () => dynamic(() => import('../Map'), { ssr: false }),
-    []
-  );
+  const Map = useMemo(() => dynamic(() => import('../Map'), { ssr: false }), []);
 
   const onBack = useCallback(() => {
     setStep((value) => value - 1);
@@ -146,7 +154,8 @@ const SearchModal = () => {
         />
         <Calendar
           value={dateRange}
-          onChange={(value) => setDateRange(value.selection)}
+          // `value.selection` is of type `Range`
+          onChange={(ranges) => setDateRange(ranges.selection)}
         />
       </div>
     );
