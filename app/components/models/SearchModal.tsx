@@ -1,7 +1,7 @@
 'use client';
+
 import { useRouter, useSearchParams } from "next/navigation";
 import Modal from "./Modal";
-
 import useSearchModal from "@/app/hooks/useSearchModal";
 import { useCallback, useMemo, useState } from "react";
 import CountrySelect, { CountrySelectValue } from "../inputs/CountrySelect";
@@ -18,18 +18,17 @@ enum STEPS {
   INFO = 2
 }
 
-/**
- * Define an interface (or type) for your query parameters
- */
-interface SearchQuery {
+// ---- FIX: Make this compatible with query-string ----
+interface SearchQuery extends Record<
+  string,
+  string | number | boolean | null | undefined
+> {
   locationValue?: string;
   guestCount?: number;
   roomCount?: number;
   bathroomCount?: number;
   startDate?: string;
   endDate?: string;
-  // You can include other keys you expect `queryString.parse()` to return
-  [key: string]: unknown; // to allow additional properties
 }
 
 const SearchModal = () => {
@@ -62,7 +61,6 @@ const SearchModal = () => {
   }, []);
 
   const onSubmit = useCallback(async () => {
-    // If we haven't reached the final step, move forward
     if (step !== STEPS.INFO) {
       onNext();
       return;
@@ -117,17 +115,11 @@ const SearchModal = () => {
   ]);
 
   const actionLabel = useMemo(() => {
-    if (step === STEPS.INFO) {
-      return 'Search';
-    }
-    return 'Next';
+    return step === STEPS.INFO ? 'Search' : 'Next';
   }, [step]);
 
   const secondaryActionLabel = useMemo(() => {
-    if (step === STEPS.LOCATION) {
-      return undefined;
-    }
-    return 'Back';
+    return step === STEPS.LOCATION ? undefined : 'Back';
   }, [step]);
 
   let bodyContent = (
